@@ -1,6 +1,7 @@
 ;;; org-pagemaker.el --- Org-mode assistant for typst-pagemaker -*- lexical-binding: t; -*-
 
 ;; Package-Requires: ((emacs "27.1") (org "9.3"))
+;; Version: 0.1.0
 ;; Keywords: documents, tools, convenience
 ;; URL: https://github.com/sanderboer/org-pagemaker
 
