@@ -1,5 +1,7 @@
 ;;; pagemaker-el.el --- Compatibility shims for org-pagemaker -*- lexical-binding: t; -*-
 
+;; URL: https://github.com/sanderboer/org-pagemaker
+
 ;; This file provides backward-compatible aliases from the old
 ;; pagemaker-el package names to the new org-pagemaker package.
 

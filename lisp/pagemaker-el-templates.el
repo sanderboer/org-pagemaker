@@ -1,4 +1,5 @@
 ;;; pagemaker-el-templates.el --- Templates for pagemaker Org docs -*- lexical-binding: t; -*-
+;; URL: https://github.com/sanderboer/org-pagemaker
 
 ;;; Commentary:
 ;; Interactive inserters for document headers, pages, and elements recognized by

@@ -2,7 +2,7 @@
 
 ;; Package-Requires: ((emacs "27.1") (org "9.3"))
 ;; Keywords: documents, tools, convenience
-;; URL: https://github.com/your/repo
+;; URL: https://github.com/sanderboer/org-pagemaker
 
 ;;; Commentary:
 ;;
