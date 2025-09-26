@@ -1,5 +1,5 @@
 ;;; org-pagemaker-templates.el --- Templates for org-pagemaker Org docs -*- lexical-binding: t; -*-
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; URL: https://github.com/sanderboer/org-pagemaker
 
 ;;; Commentary:

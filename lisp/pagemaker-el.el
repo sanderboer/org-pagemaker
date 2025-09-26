@@ -1,6 +1,6 @@
 ;;; pagemaker-el.el --- Compatibility shims for org-pagemaker -*- lexical-binding: t; -*-
 
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; URL: https://github.com/sanderboer/org-pagemaker
 
 ;; This file provides backward-compatible aliases from the old

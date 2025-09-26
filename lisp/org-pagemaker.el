@@ -1,7 +1,7 @@
 ;;; org-pagemaker.el --- Org-mode assistant for typst-pagemaker -*- lexical-binding: t; -*-
 
 ;; Package-Requires: ((emacs "27.1") (org "9.3"))
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Keywords: documents, tools, convenience
 ;; URL: https://github.com/sanderboer/org-pagemaker
 
@@ -100,7 +100,7 @@
          (val (if (and cur (not (string-empty-p cur)))
                   (concat src sep cur)
                 src)))
-    (cons (concat "PYTHONPATH=" val) process-environment))
+    (cons (concat "PYTHONPATH=" val) process-environment)))
 
 (defun org-pagemaker--cmd (&rest args)
   "Build command list to run pagemaker with ARGS."
