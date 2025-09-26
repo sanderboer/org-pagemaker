@@ -1,7 +1,7 @@
 ;;; org-pagemaker.el --- Org-mode assistant for typst-pagemaker -*- lexical-binding: t; -*-
 
 ;; Package-Requires: ((emacs "27.1") (org "9.3"))
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Keywords: documents, tools, convenience
 ;; URL: https://github.com/sanderboer/org-pagemaker
 
@@ -404,6 +404,38 @@ With prefix PDF (C-u), also build the PDF. Prompt for TYPE when called with doub
   "Minor mode to assist authoring pagemaker Org documents."
   :lighter " PM"
   :keymap org-pagemaker-mode-map)
+
+(eval-when-compile (require 'hydra nil t))
+(if (require 'hydra nil t)
+    (progn
+      (defhydra org-pagemaker-hydra (:hint nil :color teal)
+        "
+ Org Pagemaker
+ Build:  _b_uild  _P_DF  _w_atch  _S_top  _o_pen-pdf  _v_alidate  _i_r
+ Fonts:  _l_ist   _I_nstall  _V_alidate  _s_earch  _a_nalyze  s_p_ecimen
+ Templ:  _d_oc     _n_ew-page  _e_lement
+ "
+        ("b" org-pagemaker-build)
+        ("P" org-pagemaker-pdf)
+        ("w" org-pagemaker-watch)
+        ("S" org-pagemaker-stop-watch)
+        ("o" org-pagemaker-open-last-pdf)
+        ("v" org-pagemaker-validate)
+        ("i" org-pagemaker-ir)
+        ("l" org-pagemaker-fonts-list)
+        ("I" org-pagemaker-fonts-install)
+        ("V" org-pagemaker-fonts-validate)
+        ("s" org-pagemaker-fonts-search)
+        ("a" org-pagemaker-fonts-analyze)
+        ("p" org-pagemaker-fonts-specimen)
+        ("d" org-pagemaker-insert-document-template)
+        ("n" org-pagemaker-insert-page)
+        ("e" org-pagemaker-insert-element)
+        ("q" nil "quit"))
+      (define-key org-pagemaker-mode-map (kbd "C-c p h") #'org-pagemaker-hydra/body))
+  (define-key org-pagemaker-mode-map (kbd "C-c p h")
+    (lambda () (interactive)
+      (user-error "Hydra not installed. Install with M-x package-install RET hydra RET"))))
 
 (provide 'org-pagemaker)
 ;;; org-pagemaker.el ends here
