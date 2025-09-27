@@ -37,40 +37,46 @@
     (file-relative-name abs root)))
 
 ;;;###autoload
-(defun org-pagemaker-insert-document-template ()
-  "Insert a document-level header template with common meta keys."
-  (interactive)
-  (let* ((title (read-string "Title: " (or (and (buffer-file-name)
-                                                (file-name-base (buffer-file-name)))
-                                            "Untitled")))
-         (ps (completing-read "Page size: " org-pagemaker--page-sizes nil t nil nil "A4"))
-         (orient (completing-read "Orientation: " org-pagemaker--orientations nil t nil nil "landscape"))
-         (grid (read-string "Grid (colsxrows): " "12x8"))
-         (margins (read-string "Margins TRBL mm (empty=none): " "15,15,15,15"))
-         (font (read-string "Default font (#+FONT): " "Manrope"))
-         (theme (completing-read "Theme: " '("light") nil t nil nil "light"))
-         (grid-debug (completing-read "Grid debug: " '("false" "true") nil t nil nil "false")))
-    (org-pagemaker--insert-lines
-     (format "#+TITLE: %s" title)
-     (format "#+PAGESIZE: %s" ps)
-     (format "#+ORIENTATION: %s" orient)
-     (format "#+GRID: %s" grid)
-     (when (not (string-empty-p margins)) (format "#+MARGINS: %s" margins))
-     (format "#+THEME: %s" theme)
-     (format "#+GRID_DEBUG: %s" grid-debug)
-     (format "#+FONT: %s" font)
-     "#+STYLE_HEADER: font: Manrope, weight: bold, size: 24pt"
-     "#+STYLE_SUBHEADER: font: Manrope, weight: semibold, size: 18pt"
-     "#+STYLE_BODY: font: Manrope, size: 11pt"
-     ""
-     "* Page 1"
-     ":PROPERTIES:"
-     (format ":PAGE_SIZE: %s" ps)
-     (format ":ORIENTATION: %s" orient)
-     (format ":GRID: %s" grid)
-     (when (not (string-empty-p margins)) (format ":MARGINS: %s" margins))
-     ":END:"
-     "")))
+ (defun org-pagemaker-insert-document-template ()
+   "Insert a document-level header template with common meta keys."
+   (interactive)
+   (let* ((title (read-string "Title: " (or (and (buffer-file-name)
+                                                 (file-name-base (buffer-file-name)))
+                                             "Untitled")))
+          (author (read-string "Author: " "Your Name"))
+          (date (format-time-string "%Y-%m-%d" (current-time)))
+          (ps (completing-read "Page size: " org-pagemaker--page-sizes nil t nil nil "A4"))
+          (orient (completing-read "Orientation: " org-pagemaker--orientations nil t nil nil "landscape"))
+          (grid (read-string "Grid (colsxrows): " "12x8"))
+          (margins (read-string "Margins TRBL mm (empty=none): " "15,15,15,15"))
+          (font (read-string "Default font (#+FONT): " "Manrope"))
+          (theme (completing-read "Theme: " '("light") nil t nil nil "light"))
+          (grid-debug (completing-read "Grid debug: " '("false" "true") nil t nil nil "false"))
+          (default-master (read-string "Default master: " "")))
+     (org-pagemaker--insert-lines
+      (format "#+TITLE: %s" title)
+      (format "#+AUTHOR: %s" author)
+      (format "#+DATE: %s" date)
+      (format "#+PAGESIZE: %s" ps)
+      (format "#+ORIENTATION: %s" orient)
+      (format "#+GRID: %s" grid)
+      (when (not (string-empty-p margins)) (format "#+MARGINS: %s" margins))
+      (format "#+THEME: %s" theme)
+      (format "#+GRID_DEBUG: %s" grid-debug)
+      (when (not (string-empty-p default-master)) (format "#+DEFAULT_MASTER: %s" default-master))
+      (format "#+FONT: %s" font)
+      (format "#+STYLE_HEADER: font: %s, weight: bold, size: 24pt" font)
+      (format "#+STYLE_SUBHEADER: font: %s, weight: semibold, size: 18pt" font)
+      (format "#+STYLE_BODY: font: %s, size: 11pt" font)
+      ""
+      "* Page 1"
+      ":PROPERTIES:"
+      (format ":PAGE_SIZE: %s" ps)
+      (format ":ORIENTATION: %s" orient)
+      (format ":GRID: %s" grid)
+      (when (not (string-empty-p margins)) (format ":MARGINS: %s" margins))
+      ":END:"
+      "")))
 
 ;;;###autoload
 (defun org-pagemaker-insert-page (&optional master)

@@ -263,16 +263,35 @@ With prefix PDF (C-u), build PDF on changes; otherwise Typst only."
     (setq org-pagemaker--watch-proc (apply #'org-pagemaker--start-process "org-pagemaker-watch" args))
     (message "pagemaker watch started")))
 
-;;;###autoload
-(defun org-pagemaker-stop-watch ()
-  "Stop the running pagemaker watch process, if any."
-  (interactive)
-  (if (and org-pagemaker--watch-proc (process-live-p org-pagemaker--watch-proc))
-      (progn
-        (delete-process org-pagemaker--watch-proc)
-        (setq org-pagemaker--watch-proc nil)
-        (message "pagemaker watch stopped"))
-    (message "No running pagemaker watch")))
+ ;;;###autoload
+ (defun org-pagemaker-stop-watch ()
+   "Stop the running pagemaker watch process, if any."
+   (interactive)
+   (if (and org-pagemaker--watch-proc (process-live-p org-pagemaker--watch-proc))
+       (progn
+         (delete-process org-pagemaker--watch-proc)
+         (setq org-pagemaker--watch-proc nil)
+         (message "pagemaker watch stopped"))
+     (message "No running pagemaker watch")))
+
+ ;;;###autoload
+ (defun org-pagemaker-watch-pdf (&optional open-pdf)
+   "Run `pagemaker watch` for the current Org file with PDF generation.
+ With prefix OPEN-PDF (C-u), open the resulting PDF after build."
+   (interactive "P")
+   (when (process-live-p org-pagemaker--watch-proc)
+     (user-error "A pagemaker watch is already running; stop it first"))
+   (org-pagemaker--ensure-saved)
+   (let* ((org (org-pagemaker--current-org-file))
+          (args (list "watch" org "--export-dir" org-pagemaker-export-dir "--pdf" "-o" org-pagemaker-typst-output)))
+     (when org-pagemaker-pdf-output
+       (setq args (append args (list "--pdf-output" org-pagemaker-pdf-output))))
+     (when org-pagemaker-sanitize-pdfs
+       (setq args (append args (list "--sanitize-pdfs"))))
+     (setq org-pagemaker--watch-proc (apply #'org-pagemaker--start-process "org-pagemaker-watch-pdf" args))
+     (message "pagemaker watch with PDF started")
+     (when open-pdf
+       (run-at-time "2 sec" nil #'org-pagemaker-open-last-pdf))))
 
 ;;;###autoload
 (defun org-pagemaker-ir ()
@@ -375,29 +394,30 @@ With prefix PDF (C-u), also build the PDF. Prompt for TYPE when called with doub
 (autoload 'org-pagemaker-insert-page "org-pagemaker-templates" "Insert a page with property drawer." t)
 (autoload 'org-pagemaker-insert-element "org-pagemaker-templates" "Insert an element with properties." t)
 
-(defvar org-pagemaker-mode-map
-  (let ((map (make-sparse-keymap)))
-    ;; Builds
-    (define-key map (kbd "C-c p b") #'org-pagemaker-build)
-    (define-key map (kbd "C-c p p") #'org-pagemaker-pdf)
-    (define-key map (kbd "C-c p o") #'org-pagemaker-open-last-pdf)
-    (define-key map (kbd "C-c p v") #'org-pagemaker-validate)
-    (define-key map (kbd "C-c p w") #'org-pagemaker-watch)
-    (define-key map (kbd "C-c p s") #'org-pagemaker-stop-watch)
-    (define-key map (kbd "C-c p i") #'org-pagemaker-ir)
-    ;; Templates
-    (define-key map (kbd "C-c p t d") #'org-pagemaker-insert-document-template)
-    (define-key map (kbd "C-c p t p") #'org-pagemaker-insert-page)
-    (define-key map (kbd "C-c p t e") #'org-pagemaker-insert-element)
-    ;; Fonts
-    (define-key map (kbd "C-c p f l") #'org-pagemaker-fonts-list)
-    (define-key map (kbd "C-c p f i") #'org-pagemaker-fonts-install)
-    (define-key map (kbd "C-c p f v") #'org-pagemaker-fonts-validate)
-    (define-key map (kbd "C-c p f s") #'org-pagemaker-fonts-search)
-    (define-key map (kbd "C-c p f a") #'org-pagemaker-fonts-analyze)
-    (define-key map (kbd "C-c p f p") #'org-pagemaker-fonts-specimen)
-    map)
-  "Keymap for `org-pagemaker-mode'.")
+ (defvar org-pagemaker-mode-map
+   (let ((map (make-sparse-keymap)))
+     ;; Builds
+     (define-key map (kbd "C-c p b") #'org-pagemaker-build)
+     (define-key map (kbd "C-c p p") #'org-pagemaker-pdf)
+     (define-key map (kbd "C-c p o") #'org-pagemaker-open-last-pdf)
+     (define-key map (kbd "C-c p v") #'org-pagemaker-validate)
+     (define-key map (kbd "C-c p w") #'org-pagemaker-watch)
+     (define-key map (kbd "C-c p W") #'org-pagemaker-watch-pdf)
+     (define-key map (kbd "C-c p s") #'org-pagemaker-stop-watch)
+     (define-key map (kbd "C-c p i") #'org-pagemaker-ir)
+     ;; Templates
+     (define-key map (kbd "C-c p t d") #'org-pagemaker-insert-document-template)
+     (define-key map (kbd "C-c p t p") #'org-pagemaker-insert-page)
+     (define-key map (kbd "C-c p t e") #'org-pagemaker-insert-element)
+     ;; Fonts
+     (define-key map (kbd "C-c p f l") #'org-pagemaker-fonts-list)
+     (define-key map (kbd "C-c p f i") #'org-pagemaker-fonts-install)
+     (define-key map (kbd "C-c p f v") #'org-pagemaker-fonts-validate)
+     (define-key map (kbd "C-c p f s") #'org-pagemaker-fonts-search)
+     (define-key map (kbd "C-c p f a") #'org-pagemaker-fonts-analyze)
+     (define-key map (kbd "C-c p f p") #'org-pagemaker-fonts-specimen)
+     map)
+   "Keymap for `org-pagemaker-mode'.")
 
 ;;;###autoload
 (define-minor-mode org-pagemaker-mode
@@ -408,30 +428,31 @@ With prefix PDF (C-u), also build the PDF. Prompt for TYPE when called with doub
 (eval-when-compile (require 'hydra nil t))
 (if (require 'hydra nil t)
     (progn
-      (defhydra org-pagemaker-hydra (:hint nil :color teal)
-        "
- Org Pagemaker
- Build:  _b_uild  _P_DF  _w_atch  _S_top  _o_pen-pdf  _v_alidate  _i_r
- Fonts:  _l_ist   _I_nstall  _V_alidate  _s_earch  _a_nalyze  s_p_ecimen
- Templ:  _d_oc     _n_ew-page  _e_lement
- "
-        ("b" org-pagemaker-build)
-        ("P" org-pagemaker-pdf)
-        ("w" org-pagemaker-watch)
-        ("S" org-pagemaker-stop-watch)
-        ("o" org-pagemaker-open-last-pdf)
-        ("v" org-pagemaker-validate)
-        ("i" org-pagemaker-ir)
-        ("l" org-pagemaker-fonts-list)
-        ("I" org-pagemaker-fonts-install)
-        ("V" org-pagemaker-fonts-validate)
-        ("s" org-pagemaker-fonts-search)
-        ("a" org-pagemaker-fonts-analyze)
-        ("p" org-pagemaker-fonts-specimen)
-        ("d" org-pagemaker-insert-document-template)
-        ("n" org-pagemaker-insert-page)
-        ("e" org-pagemaker-insert-element)
-        ("q" nil "quit"))
+       (defhydra org-pagemaker-hydra (:hint nil :color teal)
+         "
+  Org Pagemaker
+  Build:  _b_uild  _P_DF  _w_atch  _W_atch+PDF  _S_top  _o_pen-pdf  _v_alidate  _i_r
+  Fonts:  _l_ist   _I_nstall  _V_alidate  _s_earch  _a_nalyze  s_p_ecimen
+  Templ:  _d_oc     _n_ew-page  _e_lement
+  "
+         ("b" org-pagemaker-build)
+         ("P" org-pagemaker-pdf)
+         ("w" org-pagemaker-watch)
+         ("W" org-pagemaker-watch-pdf)
+         ("S" org-pagemaker-stop-watch)
+         ("o" org-pagemaker-open-last-pdf)
+         ("v" org-pagemaker-validate)
+         ("i" org-pagemaker-ir)
+         ("l" org-pagemaker-fonts-list)
+         ("I" org-pagemaker-fonts-install)
+         ("V" org-pagemaker-fonts-validate)
+         ("s" org-pagemaker-fonts-search)
+         ("a" org-pagemaker-fonts-analyze)
+         ("p" org-pagemaker-fonts-specimen)
+         ("d" org-pagemaker-insert-document-template)
+         ("n" org-pagemaker-insert-page)
+         ("e" org-pagemaker-insert-element)
+         ("q" nil "quit"))
       (define-key org-pagemaker-mode-map (kbd "C-c p h") #'org-pagemaker-hydra/body))
   (define-key org-pagemaker-mode-map (kbd "C-c p h")
     (lambda () (interactive)
